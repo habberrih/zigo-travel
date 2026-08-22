@@ -372,7 +372,10 @@ export default function Home() {
           </a>
         </nav>
 
-        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div
+          className="header-actions"
+          style={{ display: "flex", alignItems: "center", gap: 14 }}
+        >
           <span
             style={{
               fontFamily: "var(--font-cairo)",
@@ -1809,7 +1812,7 @@ export default function Home() {
             lineHeight: 1.7,
           }}
         >
-          جميع الصور من مواد ZIGO للسفر والسياحة.
+          جميع الحقوق محفوظة © 2026 ZIGO للسفر والسياحة
         </span>
       </footer>
     </div>
