@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0a;
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-tajawal), sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+a {
+  color: #e0b96f;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #f4dba6;
+}
+
+::selection {
+  background: #e0b96f;
+  color: #0a0a0a;
+}
+
+@keyframes floatUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.font-cairo {
+  font-family: var(--font-cairo), sans-serif;
+}
+
+.animate-float-up {
+  animation: floatUp 0.7s ease both;
+}
+
+.hover-lift:hover {
+  transform: translateY(-6px);
+}
+
+.hover-lift-sm:hover {
+  transform: translateY(-2px);
+}
+
+.hover-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(224, 185, 111, 0.45);
+}
+
+.hover-bright:hover {
+  filter: brightness(1.08);
+}
+
+.hover-bright-sm:hover {
+  filter: brightness(1.06);
+}
+
+.hover-bg-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.hover-bg-gold:hover {
+  background: rgba(224, 185, 111, 0.18);
+}
+
+.nav-link {
+  color: #d6d6d6;
+}
+
+.nav-link:hover {
+  color: #e0b96f;
+}
