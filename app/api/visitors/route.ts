@@ -6,8 +6,10 @@ const COOKIE_NAME = "zigo_visited";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 function getRedis() {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Vercel's Storage integration injects KV_REST_API_URL/TOKEN (legacy KV
+  // naming); fall back to the plain Upstash names for portability.
+  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token || !url.startsWith("https://")) return null;
   return new Redis({ url, token });
 }
