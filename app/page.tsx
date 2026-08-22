@@ -292,9 +292,8 @@ export default function Home() {
     <div style={{ fontFamily: "var(--font-tajawal)" }}>
       {/* Header */}
       <header
+        className="site-header"
         style={{
-          position: "sticky",
-          top: 0,
           zIndex: 60,
           display: "flex",
           alignItems: "center",
@@ -373,7 +372,7 @@ export default function Home() {
           </a>
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <span
             style={{
               fontFamily: "var(--font-cairo)",

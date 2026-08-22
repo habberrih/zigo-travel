@@ -88,3 +88,22 @@ a:hover {
 .nav-link:hover {
   color: #e0b96f;
 }
+
+.site-header {
+  position: static;
+}
+
+.header-actions {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  .site-header {
+    position: sticky;
+    top: 0;
+  }
+
+  .header-actions {
+    display: flex !important;
+  }
+}
