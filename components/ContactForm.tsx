@@ -3,14 +3,26 @@
 import { useState } from "react";
 import PassportUpload from "@/components/PassportUpload";
 
-type Status = "idle" | "submitting" | "success" | "error";
+type Status = "idle" | "submitting" | "success" | "error" | "too-fast";
+
+// Minimum time (ms) a real person needs to fill the form. Submissions faster
+// than this are almost certainly bots — blocking them client-side keeps the
+// form's traffic pattern looking human to Basin's spam classifier.
+const MIN_FILL_TIME_MS = 3000;
 
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
+  const [mountedAt, setMountedAt] = useState(() => Date.now());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
+
+    if (Date.now() - mountedAt < MIN_FILL_TIME_MS) {
+      setStatus("too-fast");
+      return;
+    }
+
     setStatus("submitting");
 
     try {
@@ -23,6 +35,7 @@ export default function ContactForm() {
       if (res.ok) {
         setStatus("success");
         form.reset();
+        setMountedAt(Date.now());
       } else {
         setStatus("error");
       }
@@ -107,17 +120,22 @@ export default function ContactForm() {
         boxShadow: "0 30px 70px rgba(0,0,0,0.4)",
       }}
     >
-      <input type="hidden" name="_gotcha" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+      {/* Honeypot: real users never see or fill this; bots that auto-fill every
+          field trip it and Basin silently discards the submission as spam. */}
+      <div style={honeypotWrapperStyle} aria-hidden="true">
+        <label htmlFor="company">Company</label>
+        <input type="text" id="company" name="_gotcha" tabIndex={-1} autoComplete="off" />
+      </div>
       <h3 style={{ fontFamily: "var(--font-cairo)", fontWeight: 800, fontSize: 25, margin: 0 }}>أرسل طلبك</h3>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontSize: 14, color: "#a3a3a3" }}>الاسم الكامل</span>
-          <input type="text" name="name" required placeholder="مثال: أحمد المبروك" style={inputStyle} />
+          <input type="text" name="name" required autoComplete="name" placeholder="مثال: أحمد المبروك" style={inputStyle} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontSize: 14, color: "#a3a3a3" }}>رقم الهاتف</span>
-          <input type="tel" name="phone" required placeholder="091 000 0000" style={{ ...inputStyle, direction: "ltr", textAlign: "right" }} />
+          <input type="tel" name="phone" required autoComplete="tel" placeholder="091 000 0000" style={{ ...inputStyle, direction: "ltr", textAlign: "right" }} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontSize: 14, color: "#a3a3a3" }}>نوع الخدمة</span>
@@ -154,6 +172,12 @@ export default function ContactForm() {
       {status === "error" && (
         <p style={{ margin: 0, color: "#e0857a", fontSize: 15, fontFamily: "var(--font-cairo)", fontWeight: 700 }}>
           تعذّر إرسال الطلب. تحقق من اتصالك بالإنترنت وحاول مرة أخرى، أو راسلنا مباشرة على واتساب.
+        </p>
+      )}
+
+      {status === "too-fast" && (
+        <p style={{ margin: 0, color: "#f0d49a", fontSize: 15, fontFamily: "var(--font-cairo)", fontWeight: 700 }}>
+          تأكد من تعبئة البيانات ثم أعد الضغط على إرسال الطلب.
         </p>
       )}
 
@@ -216,4 +240,13 @@ const selectStyle: React.CSSProperties = {
 const optionStyle: React.CSSProperties = {
   backgroundColor: "#1a1a1a",
   color: "#ffffff",
+};
+
+const honeypotWrapperStyle: React.CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
 };
