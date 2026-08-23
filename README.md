@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZIGO للسفر والسياحة — zigo.ly
 
-## Getting Started
+Marketing site for **ZIGO Travel & Tourism**, a full-service travel agency based in
+Tripoli, Libya. Arabic-first (RTL), single-page, built with Next.js 16 and deployed
+on Vercel at [zigo.ly](https://zigo.ly).
 
-First, run the development server:
+Services presented: visas, embassy appointment booking, flight tickets, hotels, and
+tour packages.
+
+## Tech stack
+
+| | |
+|---|---|
+| Framework | Next.js 16.3 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS v4 |
+| Fonts | Cairo + Tajawal via `next/font/google` (Arabic + Latin subsets) |
+| Forms | [Basin](https://usebasin.com) (no backend) |
+| Visitor counter | Upstash Redis via Vercel's Storage integration |
+| Hosting | Vercel |
+
+## Getting started
 
 ```bash
+npm install
+cp .env.local.example .env.local   # then fill in the values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other scripts: `npm run build`, `npm run start`, `npm run lint`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+Copy `.env.local.example` to `.env.local`. Everything is optional for local
+development — the site renders fine without any of it, the contact form just
+posts to a placeholder and the visitor counter reports `configured: false`.
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_BASIN_FORM_ID` | Basin form ID the contact form posts to |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint for the visitor counter |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+On Vercel, the Storage integration injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`
+instead. The API route reads either naming, preferring the `KV_` pair — see
+`app/api/visitors/route.ts`. To pull production values locally: `vercel env pull .env.local`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```
+app/
+  layout.tsx        Root layout — fonts, metadata, JSON-LD structured data
+  page.tsx          The entire single-page site
+  globals.css       Tailwind + design tokens
+  robots.ts         Generates /robots.txt
+  sitemap.ts        Generates /sitemap.xml
+  icon.png          Favicon / apple-touch-icon (file conventions)
+  api/visitors/     Visitor counter — cookie-deduplicated Redis INCR
+components/
+  ContactForm.tsx     Posts to Basin, includes PassportUpload
+  PassportUpload.tsx  Passport image attachment field
+  VisitorCounter.tsx  Fetches /api/visitors, hides itself if unconfigured
+public/assets/        Logos, hero art, destination photos
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## SEO
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The site is a single Arabic page, so most SEO work lives in `app/layout.tsx`:
+
+- **Canonical URL** via `metadataBase` + `alternates.canonical` — keeps Vercel
+  preview deployments (`*.vercel.app`) from competing with `zigo.ly` in the index.
+- **Bilingual title** — includes both `ZIGO` and `زيقو`, since Latin and Arabic
+  spellings are distinct queries.
+- **Open Graph / Twitter cards** — link previews for WhatsApp, Facebook, Instagram,
+  which is where most traffic originates.
+- **JSON-LD** (`TravelAgency` + `WebSite`) with `alternateName`, phone, Tripoli
+  address, 24/7 hours, and `sameAs` social links. This is what lets Google treat
+  "zigo" as a brand entity rather than a generic string.
+- **`robots.ts` / `sitemap.ts`** — indexable, `/api/` excluded, sitemap declared.
+
+Verify after deploying: <https://zigo.ly/robots.txt> and <https://zigo.ly/sitemap.xml>.
+
+Ranking for the brand name also depends on things outside this repo — a Google
+Business Profile for the Tripoli office, verifying the domain in Google Search
+Console and submitting the sitemap, and consistent name/address/phone across the
+Facebook and Instagram profiles.
+
+## Deployment
+
+Pushes to `main` deploy automatically via Vercel's Git integration. There is no
+GitHub Actions workflow — it was removed in favour of the native integration.
+
+## Notes
+
+`AGENTS.md` and the block it is referenced from in `CLAUDE.md` are generated by
+`next dev` (see `node_modules/next/dist/server/lib/generate-agent-files.js`).
+Leave them in place; deleting them only recreates an uncommitted change.
